@@ -1,0 +1,8 @@
+# General
+# ------------------------------------------------------------------------------
+USE_DOCKER=yes
+IPYTHONDIR=/app/.ipython
+
+WOMPI_HOST=https://sandbox.wompi.co/v1
+WOMPI_PUBLIC_KEY=pub_test_BePgSvDVyf2Nwba4FtHwZiv5NtEOttt9
+WOMPI_PRIVATE_KEY=prv_test_cFKz942aTvN1vSNJai42Tb80EsKHu3K1
