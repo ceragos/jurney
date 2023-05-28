@@ -1,11 +1,17 @@
+import math
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .serializers import UserSerializer
+from journey.users.api.serializers import UserSerializer, RiderSerializer
+from journey.users.models import Rider, Driver
+from journey.rides.models import Rate, Ride
+from journey.rides.api.serializers import RequestRideSerializer
+from journey.utils.distances import calculate_distance
 
 User = get_user_model()
 
@@ -23,3 +29,60 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     def me(self, request):
         serializer = UserSerializer(request.user, context={"request": request})
         return Response(status=status.HTTP_200_OK, data=serializer.data)
+    
+class RiderViewSet(GenericViewSet):
+    queryset = Rider.objects.all()
+    serializer_class = RiderSerializer
+
+    @action(methods=['patch'], detail=False)
+    def payment_method(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = self.request.user
+        rider = Rider.objects.get(user=user)
+
+        rider.tokenized_card = serializer.validated_data['tokenized_card']
+        rider.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    @action(methods=['post'], detail=False)
+    def request_ride(self, request):
+        serializer = RequestRideSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        rider = Rider.objects.get(user=request.user)
+        active_rate = Rate.objects.filter(active=True).first()
+        rider_lat = serializer.validated_data['latitude']
+        rider_lon = serializer.validated_data['longitude']
+
+        data = serializer.data
+        drivers = data['drivers']
+
+        min_distance = math.inf
+        closest_driver = None
+
+        for driver in drivers:
+            print(rider_lat, rider_lon, driver.current_latitude, driver.current_longitude)
+            print(type(rider_lat), type(rider_lon), type(driver.current_latitude), type(driver.current_longitude))
+            distance = calculate_distance(
+                rider_lat, rider_lon,
+                driver.current_latitude, 
+                driver.current_longitude
+            )
+            if distance < min_distance:
+                min_distance = distance
+                closest_driver = driver
+
+        ride = Ride(
+            rider=rider,
+            driver=closest_driver,
+            rate=active_rate,
+            starting_latitude=rider_lat,
+            starting_longitude=rider_lon
+        )
+        ride.save()
+
+        return Response(data, status=status.HTTP_201_CREATED)
