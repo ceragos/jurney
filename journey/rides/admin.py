@@ -1,3 +1,11 @@
 from django.contrib import admin
+from journey.rides.models import Rate, Ride
 
-# Register your models here.
+@admin.register(Rate)
+class RateAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Ride)
+class RideAdmin(admin.ModelAdmin):
+    pass
