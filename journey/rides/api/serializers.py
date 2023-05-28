@@ -36,12 +36,12 @@ class RequestRideSerializer(serializers.Serializer):
                 }
             )
 
-        if not rider.tokenized_card:
+        if not rider.payment_source:
             raise serializers.ValidationError(
                 {
                     "error": {
                         "type": "PAYMENT_METHOD_VALIDATION_ERROR",
-                        "reason": "Rider does not have a tokenized card"
+                        "reason": "Rider does not have a payment sources"
                     }
                 }
             )

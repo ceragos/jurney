@@ -44,7 +44,7 @@ def get_tokenized_card(card_holder):
 
     return response.json().get("tokenized_card")
 
-def get_payment_sources(token, acceptance_token, customer_email):
+def get_payment_source(token, acceptance_token, customer_email):
     api_endpoint = f"{os.environ['WOMPI_HOST']}/payment_sources"
     api_key = os.environ['WOMPI_PRIVATE_KEY']
 
@@ -63,7 +63,7 @@ def get_payment_sources(token, acceptance_token, customer_email):
     response = requests.request("POST", api_endpoint, headers=headers, data=payload)
     response_data = response.json()
     if response.status_code == 200:
-        payment_sources = response_data['data']['id']
-        return {"status": response.status_code, "payment_sources": payment_sources}
+        payment_source = response_data['data']['id']
+        return {"status": response.status_code, "payment_source": payment_source}
     else:
         return {"status": response.status_code, "data": response_data}

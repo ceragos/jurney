@@ -5,7 +5,7 @@ from factory import Faker, post_generation, SubFactory
 from factory.django import DjangoModelFactory
 
 from journey.users.models import Rider, Driver
-from journey.utils.payment_platform import get_acceptance_token, get_payment_sources, get_tokenized_card
+from journey.utils.payment_platform import get_acceptance_token, get_payment_source, get_tokenized_card
 
 fake = Faker()
 
@@ -53,7 +53,7 @@ class RiderFactory(DjangoModelFactory):
     def payment_source(self, create, extracted, **kwargs):
         tokenized_card = get_tokenized_card(self.user.name)
         acceptance_token = get_acceptance_token()
-        self.payment_source = get_payment_sources(tokenized_card, acceptance_token, self.user.email)
+        self.payment_source = get_payment_source(tokenized_card, acceptance_token, self.user.email)
 
     class Meta:
         model = Rider

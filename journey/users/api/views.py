@@ -12,7 +12,7 @@ from journey.users.models import Rider, Driver
 from journey.rides.models import Rate, Ride
 from journey.rides.api.serializers import RequestRideSerializer
 from journey.utils.distances import calculate_distance
-from journey.utils.payment_platform import get_payment_sources
+from journey.utils.payment_platform import get_payment_source
 
 User = get_user_model()
 
@@ -42,19 +42,18 @@ class RiderViewSet(GenericViewSet):
 
         user = self.request.user
         rider = Rider.objects.get(user=user)
-        payment_sources = get_payment_sources(
+        payment_source = get_payment_source(
             serializer.validated_data['tokenized_card'], 
             serializer.validated_data['acceptance_token'], 
             user.email
         )
-        if payment_sources['status'] != 200:
-            return Response(payment_sources['data'], status=payment_sources['status'])
+        if payment_source['status'] != 200:
+            return Response(payment_source['data'], status=payment_source['status'])
         
-        rider.payment_source = payment_sources
+        rider.payment_source = payment_source
         rider.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
     @action(methods=['post'], detail=False)
     def request_ride(self, request):
@@ -90,5 +89,7 @@ class RiderViewSet(GenericViewSet):
             starting_longitude=rider_lon
         )
         ride.save()
+
+        data.pop('drivers')
 
         return Response(data, status=status.HTTP_201_CREATED)
