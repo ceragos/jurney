@@ -36,7 +36,7 @@ class Driver(models.Model):
     
 
 class Rider(models.Model):
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="driver_user")
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rider_user")
     tokenized_card = models.CharField(max_length=50, null=True, help_text="data created in the payment api")
 
     def __str__(self) -> str:

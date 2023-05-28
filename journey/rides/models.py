@@ -7,9 +7,22 @@ from django.dispatch import receiver
 from journey.users.models import Rider, Driver
 
 
+class Rate(models.Model):
+    base = models.SmallIntegerField()
+    minute = models.SmallIntegerField()
+    kilometer = models.SmallIntegerField()
+    active = models.BooleanField(default=True)
+
+@receiver(pre_save, sender=Rate)
+def deactivate_existing_rates(sender, instance, **kwargs):
+    if instance.active:
+        Rate.objects.exclude(pk=instance.pk).update(active=False)
+
+
 class Ride(models.Model):
     rider = models.ForeignKey(Rider, on_delete=models.PROTECT, related_name='rides_as_rider')
     diver = models.ForeignKey(Driver, on_delete=models.PROTECT, related_name='rides_as_driver')
+    rate = models.ForeignKey(Rate, on_delete=models.PROTECT, related_name='ride_rates')
     start = models.DateTimeField(auto_now_add=True)
     starting_latitude = models.DecimalField(max_digits=9, decimal_places=6)
     starting_longitude = models.DecimalField(max_digits=9, decimal_places=6)
@@ -37,23 +50,10 @@ class Ride(models.Model):
         return distance
 
 
-class Rate(models.Model):
-    base = models.SmallIntegerField()
-    minute = models.SmallIntegerField()
-    kilometer = models.SmallIntegerField()
-    active = models.BooleanField(default=True)
-
-@receiver(pre_save, sender=Rate)
-def deactivate_existing_rates(sender, instance, **kwargs):
-    if instance.active:
-        Rate.objects.exclude(pk=instance.pk).update(active=False)
-
-
 class Payments(models.Model):
     ride = models.OneToOneField(Ride, on_delete=models.PROTECT, related_name='payment')
     reference = models.CharField(max_length=50)
     minutes_elapsed = models.SmallIntegerField()
     kilometers = models.SmallIntegerField()
-    rate = models.ForeignKey(Rate, on_delete=models.PROTECT, related_name='pay_rate')
     total_amount = models.FloatField()
     transaction_response = models.JSONField()

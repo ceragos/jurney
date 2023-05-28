@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from factory import Faker, post_generation, SubFactory
 from factory.django import DjangoModelFactory
 
-from users.models import Rider, Driver
+from journey.users.models import Rider, Driver
 
 
 class UserFactory(DjangoModelFactory):
