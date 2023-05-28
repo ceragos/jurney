@@ -1,8 +1,8 @@
+import math
+
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from django.contrib.gis.db.models import PointField
-from django.contrib.gis.measure import Distance
 
 from journey.users.models import Rider, Driver
 
@@ -11,16 +11,30 @@ class Ride(models.Model):
     rider = models.ForeignKey(Rider, on_delete=models.PROTECT, related_name='rides_as_rider')
     diver = models.ForeignKey(Driver, on_delete=models.PROTECT, related_name='rides_as_driver')
     start = models.DateTimeField(auto_now_add=True)
-    starting_location = PointField()
+    starting_latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    starting_longitude = models.DecimalField(max_digits=9, decimal_places=6)
     ends = models.DateTimeField(null=True, blank=True)
-    final_location = PointField(null=True, blank=True)
+    final_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    final_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     active = models.BooleanField(default=True)
 
     @property
     def distance_to_final_location(self):
-        if self.final_location is not None:
-            return self.starting_location.distance(self.final_location, Distance(km=1))
-        return None
+        
+        earth_radius = 6371
+
+        lat1 = math.radians(self.starting_latitude)
+        lon1 = math.radians(self.starting_longitude)
+        lat2 = math.radians(self.final_latitude)
+        lon2 = math.radians(self.final_longitude)
+
+        lat = lat2 - lat1
+        lon = lon2 - lon1
+
+        a = math.sin(lat/2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(lon/2) ** 2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        distance = earth_radius * c
+        return distance
 
 
 class Rate(models.Model):
