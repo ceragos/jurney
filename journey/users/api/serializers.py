@@ -16,9 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 class RiderSerializer(serializers.ModelSerializer):
+    tokenized_card = serializers.CharField(max_length=50)
+    acceptance_token = serializers.CharField(max_length=50)
     class Meta:
         model = Rider
-        fields = ["tokenized_card"]
+        fields = ["payment_source", "tokenized_card", "acceptance_token"]
+        read_only_fields = ["payment_source"]
 
     def validate(self, data):
         user = self.context['request'].user

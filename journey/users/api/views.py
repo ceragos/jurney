@@ -12,6 +12,7 @@ from journey.users.models import Rider, Driver
 from journey.rides.models import Rate, Ride
 from journey.rides.api.serializers import RequestRideSerializer
 from journey.utils.distances import calculate_distance
+from journey.utils.payment_platform import get_payment_sources
 
 User = get_user_model()
 
@@ -41,12 +42,15 @@ class RiderViewSet(GenericViewSet):
 
         user = self.request.user
         rider = Rider.objects.get(user=user)
-
-        rider.tokenized_card = serializer.validated_data['tokenized_card']
+        payment_sources = get_payment_sources(
+            serializer.validated_data['tokenized_card'], 
+            serializer.validated_data['acceptance_token'], 
+            user.email
+        )
+        rider.payment_source = payment_sources
         rider.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
     @action(methods=['post'], detail=False)
     def request_ride(self, request):
@@ -65,8 +69,6 @@ class RiderViewSet(GenericViewSet):
         closest_driver = None
 
         for driver in drivers:
-            print(rider_lat, rider_lon, driver.current_latitude, driver.current_longitude)
-            print(type(rider_lat), type(rider_lon), type(driver.current_latitude), type(driver.current_longitude))
             distance = calculate_distance(
                 rider_lat, rider_lon,
                 driver.current_latitude, 
