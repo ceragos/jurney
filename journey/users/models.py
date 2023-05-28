@@ -27,17 +27,17 @@ class User(AbstractUser):
 
 
 class Driver(models.Model):
-    user = models.ForeignKey(User, verbose_name="user", on_delete=models.PROTECT, related_name="driver_user")
+    user = models.ForeignKey(User, verbose_name="user", on_delete=models.PROTECT, related_name="driver_profile")
     current_latitude = models.DecimalField(max_digits=9, decimal_places=6)
     current_longitude = models.DecimalField(max_digits=9, decimal_places=6)
 
     def __str__(self) -> str:
-        return f"{self.user.first_name} {self.user.last_name}"
+        return self.user.name
     
 
 class Rider(models.Model):
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rider_user")
-    tokenized_card = models.CharField(max_length=50, null=True, help_text="data created in the payment api")
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rider_profile")
+    tokenized_card = models.CharField(max_length=50, null=True, blank=True, help_text="data created in the payment api")
 
     def __str__(self) -> str:
-        return f"{self.user.first_name} {self.user.last_name}"
+        return self.user.name
