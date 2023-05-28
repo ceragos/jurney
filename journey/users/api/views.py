@@ -47,10 +47,14 @@ class RiderViewSet(GenericViewSet):
             serializer.validated_data['acceptance_token'], 
             user.email
         )
+        if payment_sources['status'] != 200:
+            return Response(payment_sources['data'], status=payment_sources['status'])
+        
         rider.payment_source = payment_sources
         rider.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     @action(methods=['post'], detail=False)
     def request_ride(self, request):

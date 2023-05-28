@@ -62,5 +62,8 @@ def get_payment_sources(token, acceptance_token, customer_email):
 
     response = requests.request("POST", api_endpoint, headers=headers, data=payload)
     response_data = response.json()
-    payment_sources = response_data['data']['id']
-    return payment_sources
+    if response.status_code == 200:
+        payment_sources = response_data['data']['id']
+        return {"status": response.status_code, "payment_sources": payment_sources}
+    else:
+        return {"status": response.status_code, "data": response_data}

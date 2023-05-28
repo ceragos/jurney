@@ -17,7 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RiderSerializer(serializers.ModelSerializer):
     tokenized_card = serializers.CharField(max_length=50)
-    acceptance_token = serializers.CharField(max_length=50)
+    acceptance_token = serializers.CharField()
+    payment_source = serializers.CharField(read_only=True)
     class Meta:
         model = Rider
         fields = ["payment_source", "tokenized_card", "acceptance_token"]
