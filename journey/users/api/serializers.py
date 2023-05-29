@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
             "url": {"view_name": "api:user-detail", "lookup_field": "username"},
         }
 
-class RiderSerializer(serializers.ModelSerializer):
+class RiderPaymentMethodSerializer(serializers.ModelSerializer):
     tokenized_card = serializers.CharField(max_length=50)
     acceptance_token = serializers.CharField()
     payment_source = serializers.CharField(read_only=True)
@@ -41,9 +41,22 @@ class RiderSerializer(serializers.ModelSerializer):
 
         return data
 
+class RideUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["name", "email", "username"]
 
 class DriverSerializer(serializers.ModelSerializer):
+    user = RideUserSerializer()
 
     class Meta:
         model = Driver
-        exclude = ['user']
+        fields = ['user']
+
+
+class RiderSerializer(serializers.ModelSerializer):
+    user = RideUserSerializer()
+
+    class Meta:
+        model = Rider
+        fields = ['user']
