@@ -10,16 +10,10 @@ from journey.utils.payment_platform import get_acceptance_token, get_tokenized_c
 class TestSetUp(APITestCase):
 
     def setUp(self):
-
         self.login_url = '/auth-token/'
         self.rider1 = RiderFactory.create()
-        self.rider2 = RiderFactory.create()
         self.full_rider = RiderFactory.create_with_payment_source()
-        
         self.driver1 = DriverFactory.create()
-        
-        self.login(self.rider1.user)
-        
         return super().setUp()
     
     def login(self, user):
@@ -39,6 +33,11 @@ class TestSetUp(APITestCase):
 
 class TestRiders(TestSetUp):
     url = '/api/riders/'
+
+    def setUp(self):
+        super().setUp()
+        
+        self.login(self.rider1.user)
     
     def test_payment_method(self):
         acceptance_token = get_acceptance_token()
@@ -175,6 +174,7 @@ class TestDrivers(TestSetUp):
     def setUp(self):
         super().setUp()
         self.login(self.driver1.user)
+        self.driver2 = DriverFactory.create()
         self.latitude = Faker("latitude").evaluate(None, None, extra={"locale": None})
         self.longitude = Faker("longitude").evaluate(None, None, extra={"locale": None})
 
