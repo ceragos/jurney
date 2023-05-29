@@ -37,8 +37,8 @@ class TestSetUp(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
 
 
-class TestRide(TestSetUp):
-    url = '/api/rider/'
+class TestRiders(TestSetUp):
+    url = '/api/riders/'
     
     def test_payment_method(self):
         acceptance_token = get_acceptance_token()
@@ -165,5 +165,61 @@ class TestRide(TestSetUp):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['driver']['id'], self.driver1.id)
+        self.assertEqual(response.data['driver']['user']['email'], self.driver1.user.email)
         self.assertEqual(response.data['rate']['id'], rate.id)
+
+
+class TestDrivers(TestSetUp):
+    url = '/api/drivers/'
+
+    def setUp(self):
+        super().setUp()
+        self.login(self.driver1.user)
+        self.latitude = Faker("latitude").evaluate(None, None, extra={"locale": None})
+        self.longitude = Faker("longitude").evaluate(None, None, extra={"locale": None})
+
+        self.rate = RateFactory.create()
+        self.ride = RideFactory.create(
+            rider=self.full_rider,
+            driver=self.driver1,
+            rate=self.rate,
+            starting_latitude=self.latitude,
+            starting_longitude=self.longitude
+        )
+        self.driver2 = DriverFactory.create()
+
+    def test_finish_ride_invalid_user(self):
+        self.login(self.rider1.user)
+        response = self.client.patch(
+            self.url + f'{self.ride.id}/finish_ride/',
+            {
+                'latitude': self.latitude,
+                'longitude': self.longitude
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_finish_ride_different_driver(self):
+        self.login(self.driver2.user)
+        response = self.client.patch(
+            self.url + f'{self.ride.id}/finish_ride/',
+            {
+                'latitude': self.latitude,
+                'longitude': self.longitude
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_finish_ride_success(self):
+        self.login(self.driver1.user)
+        response = self.client.patch(
+            self.url + f'{self.ride.id}/finish_ride/',
+            {
+                'latitude': self.latitude,
+                'longitude': self.longitude
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
