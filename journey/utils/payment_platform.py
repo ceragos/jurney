@@ -1,7 +1,4 @@
 import os, requests, json
-from urllib.parse import urljoin
-from rest_framework import status
-from rest_framework.response import Response
 
 
 from factory import Faker
@@ -68,3 +65,40 @@ def get_payment_source(token, acceptance_token, customer_email):
         return {"status": response.status_code, "payment_source": payment_source}
     else:
         return {"status": response.status_code, "data": response_data}
+
+def generate_transaction(amount, customer_email, reference, payment_source):
+    api_endpoint = f"{os.environ['PAYMENT_GATEWAY_HOST']}/transactions/"
+    api_key = os.environ['PAYMENT_GATEWAY_PRIVATE_KEY']
+
+    amount_in_cents = int(f'{amount}00')
+
+    payload = json.dumps(
+        {
+            "amount_in_cents": amount_in_cents,
+            "currency": "COP",
+            "customer_email": customer_email,
+            "payment_method": {
+                "installments": 1
+            },
+            "reference": reference,
+            "payment_source_id": payment_source
+        }
+    )
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {api_key}'
+    }
+
+    response = requests.request("POST", api_endpoint, headers=headers, data=payload)
+
+    return response.json()
+
+def get_transactions(transaction_id):
+    api_endpoint = f"{os.environ['PAYMENT_GATEWAY_HOST']}/transactions/{transaction_id}"
+
+    payload = {}
+    headers = {}
+
+    response = requests.request("GET", api_endpoint, headers=headers, data=payload)
+
+    return response.json()
