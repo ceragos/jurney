@@ -1,13 +1,11 @@
 from collections.abc import Sequence
 from typing import Any
 from django.contrib.auth import get_user_model
-from factory import Faker, post_generation, SubFactory
+from factory import Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
 from journey.users.models import Rider, Driver
 from journey.utils.payment_platform import get_acceptance_token, get_payment_source, get_tokenized_card
-
-fake = Faker()
 
 
 class UserFactory(DjangoModelFactory):
@@ -37,7 +35,7 @@ class UserFactory(DjangoModelFactory):
 
 
 class DriverFactory(DjangoModelFactory):
-    user = SubFactory(UserFactory)
+    user = SubFactory(UserFactory, password="password1234")
     current_latitude = Faker("latitude")
     current_longitude = Faker("longitude")
 
@@ -46,14 +44,17 @@ class DriverFactory(DjangoModelFactory):
 
 
 class RiderFactory(DjangoModelFactory):
-    user = SubFactory(UserFactory)
-    payment_source = Faker("bank")
-    
-    @post_generation
-    def payment_source(self, create, extracted, **kwargs):
-        tokenized_card = get_tokenized_card(self.user.name)
+    user = SubFactory(UserFactory, password="password1234")
+
+    @classmethod
+    def create_with_payment_source(cls, **kwargs):
+        rider = cls.create(**kwargs)
+        tokenized_card = get_tokenized_card(rider.user.name)
         acceptance_token = get_acceptance_token()
-        self.payment_source = get_payment_source(tokenized_card, acceptance_token, self.user.email)
+        payment_source = get_payment_source(tokenized_card, acceptance_token, rider.user.email)
+        rider.payment_source = payment_source['payment_source']
+        rider.save()
+        return rider
 
     class Meta:
         model = Rider

@@ -1,6 +1,5 @@
 import math
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -8,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from journey.users.api.serializers import UserSerializer, RiderSerializer
-from journey.users.models import Rider, Driver
+from journey.users.models import Rider
 from journey.rides.models import Rate, Ride
 from journey.rides.api.serializers import RequestRideSerializer
 from journey.utils.distances import calculate_distance
@@ -47,13 +46,16 @@ class RiderViewSet(GenericViewSet):
             serializer.validated_data['acceptance_token'], 
             user.email
         )
-        if payment_source['status'] != 200:
+        if payment_source['status'] != 201:
             return Response(payment_source['data'], status=payment_source['status'])
         
-        rider.payment_source = payment_source
+        rider.payment_source = payment_source['payment_source']
         rider.save()
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = serializer.data
+        data['payment_source'] = payment_source['payment_source']
+
+        return Response(data, status=status.HTTP_200_OK)
 
     @action(methods=['post'], detail=False)
     def request_ride(self, request):
