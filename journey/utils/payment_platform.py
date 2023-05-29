@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from factory import Faker
 
 def get_acceptance_token():
-    api_key = os.environ['WOMPI_PUBLIC_KEY']
-    api_endpoint = f"{os.environ['WOMPI_HOST']}/merchants/{api_key}"
+    api_key = os.environ['PAYMENT_GATEWAY_PUBLIC_KEY']
+    api_endpoint = f"{os.environ['PAYMENT_GATEWAY_HOST']}/merchants/{api_key}/"
 
     payload = {}
     headers = {}
@@ -27,8 +27,8 @@ def get_tokenized_card(card_holder):
     exp_month = credit_card_expire[0]
     exp_year = credit_card_expire[1]
 
-    api_endpoint = f"{os.environ['WOMPI_HOST']}/tokens/cards"
-    api_key = os.environ['WOMPI_PUBLIC_KEY']
+    api_endpoint = f"{os.environ['PAYMENT_GATEWAY_HOST']}/tokens/cards/"
+    api_key = os.environ['PAYMENT_GATEWAY_PUBLIC_KEY']
 
     payload = {
         "number": card_number,
@@ -47,8 +47,8 @@ def get_tokenized_card(card_holder):
     return response_data['data']['id']
 
 def get_payment_source(token, acceptance_token, customer_email):
-    api_endpoint = urljoin(os.environ['WOMPI_HOST'], "payment_sources/")
-    api_key = os.environ['WOMPI_PRIVATE_KEY']
+    api_endpoint = f"{os.environ['PAYMENT_GATEWAY_HOST']}/payment_sources/"
+    api_key = os.environ['PAYMENT_GATEWAY_PRIVATE_KEY']
 
     payload = json.dumps({
         "type": "CARD",

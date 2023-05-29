@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
+from rest_framework import serializers, status
 
-from journey.rides.models import Rider
+from journey.rides.models import Rider, Driver
+from journey.utils.exceptions import CustomValidationError
 
 User = get_user_model()
 
@@ -28,13 +29,21 @@ class RiderSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         if not Rider.objects.filter(user=user).exists():
-            raise serializers.ValidationError(
+            raise CustomValidationError(
                 {
                     "error": {
                         "type": "PROFILE_VALIDATION_ERROR",
                         "reason": "User is not a Rider"
                     }
-                }
+                },
+                status_code=status.HTTP_401_UNAUTHORIZED
             )
 
         return data
+
+
+class DriverSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Driver
+        exclude = ['user']

@@ -6,10 +6,10 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateMode
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from journey.users.api.serializers import UserSerializer, RiderSerializer
+from journey.users.api.serializers import UserSerializer, RiderSerializer, DriverSerializer
 from journey.users.models import Rider
 from journey.rides.models import Rate, Ride
-from journey.rides.api.serializers import RequestRideSerializer
+from journey.rides.api.serializers import RequestRideSerializer, RateSerializer
 from journey.utils.distances import calculate_distance
 from journey.utils.payment_platform import get_payment_source
 
@@ -39,7 +39,7 @@ class RiderViewSet(GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = self.request.user
+        user = request.user
         rider = Rider.objects.get(user=user)
         payment_source = get_payment_source(
             serializer.validated_data['tokenized_card'], 
@@ -93,5 +93,7 @@ class RiderViewSet(GenericViewSet):
         ride.save()
 
         data.pop('drivers')
+        data['driver'] = DriverSerializer(closest_driver).data
+        data['rate'] = RateSerializer(active_rate).data
 
         return Response(data, status=status.HTTP_201_CREATED)
