@@ -19,16 +19,15 @@ class RiderSerializer(serializers.ModelSerializer):
     tokenized_card = serializers.CharField(max_length=50)
     acceptance_token = serializers.CharField()
     payment_source = serializers.CharField(read_only=True)
+
     class Meta:
         model = Rider
         fields = ["payment_source", "tokenized_card", "acceptance_token"]
         read_only_fields = ["payment_source"]
-
+    
     def validate(self, data):
         user = self.context['request'].user
-        try:
-            Rider.objects.get(user=user)
-        except Rider.DoesNotExist:
+        if not Rider.objects.filter(user=user).exists():
             raise serializers.ValidationError(
                 {
                     "error": {

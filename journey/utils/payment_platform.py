@@ -1,5 +1,8 @@
-import os, requests
-import json
+import os, requests, json
+from urllib.parse import urljoin
+from rest_framework import status
+from rest_framework.response import Response
+
 
 from factory import Faker
 
@@ -44,7 +47,7 @@ def get_tokenized_card(card_holder):
     return response_data['data']['id']
 
 def get_payment_source(token, acceptance_token, customer_email):
-    api_endpoint = f"{os.environ['WOMPI_HOST']}/payment_sources"
+    api_endpoint = urljoin(os.environ['WOMPI_HOST'], "payment_sources/")
     api_key = os.environ['WOMPI_PRIVATE_KEY']
 
     payload = json.dumps({
@@ -55,7 +58,6 @@ def get_payment_source(token, acceptance_token, customer_email):
     })
     headers = {
         'ACCESS_TOKEN': '{{token}}',
-        'Content-Type': 'application/json',
         'Authorization': f'Bearer {api_key}'
     }
 
