@@ -15,7 +15,9 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 ### Setting Up Container
 
-      $ docker-compose -f local.yml up
+For build docker image
+
+      $ docker-compose -f local.yml build
 
 To seed data use the command
 
@@ -31,6 +33,10 @@ To seed data use the command
       $ docker-compose -f local.yml run --rm django python manage.py createsuperuser
 
 For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
+
+Now you can run the containers
+
+      $ docker-compose -f local.yml up
 
 Login [here](http://127.0.0.1:8000/admin/)
 
