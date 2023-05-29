@@ -1,4 +1,5 @@
 import os, requests, json
+from typing import Dict
 
 
 from factory import Faker
@@ -7,10 +8,7 @@ def get_acceptance_token():
     api_key = os.environ['PAYMENT_GATEWAY_PUBLIC_KEY']
     api_endpoint = f"{os.environ['PAYMENT_GATEWAY_HOST']}/merchants/{api_key}/"
 
-    payload = {}
-    headers = {}
-
-    response = requests.request("GET", api_endpoint, headers=headers, data=payload)
+    response = requests.request("GET", api_endpoint)
     response_data = response.json()
     acceptance_token = response_data['data']['presigned_acceptance']['acceptance_token']
     return acceptance_token
@@ -96,9 +94,6 @@ def generate_transaction(amount, customer_email, reference, payment_source):
 def get_transactions(transaction_id):
     api_endpoint = f"{os.environ['PAYMENT_GATEWAY_HOST']}/transactions/{transaction_id}"
 
-    payload = {}
-    headers = {}
-
-    response = requests.request("GET", api_endpoint, headers=headers, data=payload)
+    response = requests.request("GET", api_endpoint)
 
     return response.json()

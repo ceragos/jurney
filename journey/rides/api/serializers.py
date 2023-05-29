@@ -29,8 +29,8 @@ class RequestRideSerializer(serializers.Serializer):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        rider = Rider.objects.filter(user=user)
-        if not rider.exists():
+        rider_q = Rider.objects.filter(user=user)
+        if not rider_q.exists():
             raise CustomValidationError(
                 {
                     "error": {
@@ -41,7 +41,8 @@ class RequestRideSerializer(serializers.Serializer):
                 status_code=status.HTTP_401_UNAUTHORIZED
             )
 
-        if not rider.first().payment_source:
+        rider = rider_q.first()
+        if rider and not rider.payment_source:
             raise CustomValidationError(
                 {
                     "error": {
@@ -160,8 +161,8 @@ class FinisRideSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         ride = self.instance
         
-        driver = Driver.objects.filter(user=user)
-        if not driver.exists():
+        driver_q = Driver.objects.filter(user=user)
+        if not driver_q.exists():
             raise CustomValidationError(
                 {
                     "error": {
@@ -171,8 +172,9 @@ class FinisRideSerializer(serializers.ModelSerializer):
                 },
                 status_code=status.HTTP_401_UNAUTHORIZED
             )
-        
-        if ride.driver != driver.first():
+        request_driver = driver_q.first()
+        owner_driver = ride.driver
+        if request_driver and owner_driver and owner_driver != request_driver:
             raise CustomValidationError(
                 {
                     "error": {
@@ -197,9 +199,11 @@ class FinisRideSerializer(serializers.ModelSerializer):
 
         user = self.context['request'].user
         driver = Driver.objects.filter(user=user).first()
-        driver.current_latitude = latitude
-        driver.current_longitude = longitude
-        driver.save()
+
+        if driver:
+            driver.current_latitude = latitude
+            driver.current_longitude = longitude
+            driver.save()
 
         payment_data = {
             'ride': instance.id,
