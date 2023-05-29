@@ -38,13 +38,24 @@ class Ride(models.Model):
 
     @property
     def distance_to_final_location(self):
-        distance = calculate_distance(
-            self.starting_latitude,
-            self.starting_longitude,
-            self.final_latitude,
-            self.final_longitude
-        )
-        return distance
+        if self.starting_latitude and self.starting_longitude and self.final_latitude and self.final_longitude:
+            distance = calculate_distance(
+                self.starting_latitude,
+                self.starting_longitude,
+                self.final_latitude,
+                self.final_longitude
+            )
+            return distance
+        else:
+            return None
+
+    @property
+    def duration(self):
+        if self.start and self.ends:
+            duration = int((self.ends - self.start).total_seconds() // 60)
+            return duration
+        else:
+            return None
 
 
 class Payments(models.Model):
@@ -53,4 +64,7 @@ class Payments(models.Model):
     minutes_elapsed = models.SmallIntegerField()
     kilometers = models.SmallIntegerField()
     total_amount = models.FloatField()
-    transaction_response = models.JSONField()
+    transaction_id = models.CharField(max_length=25, null=True)
+    transaction_response = models.JSONField(null=True)
+    transaction_confirmation = models.JSONField(null=True)
+    status = models.CharField(max_length=10, null=True)
