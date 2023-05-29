@@ -98,7 +98,7 @@ class RiderViewSet(ListModelMixin, GenericViewSet):
         return Response(data, status=status.HTTP_201_CREATED)
     
 
-class DriverViewSet(GenericViewSet):
+class DriverViewSet(ListModelMixin, GenericViewSet):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
 

@@ -32,6 +32,10 @@ To seed data use the command
 
 For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
 
+Login [here](http://127.0.0.1:8000/admin/)
+
+You will find the API documentation [here](http://127.0.0.1:8000/api/docs/)
+
 ### Type checks
 
 Running type checks with mypy:
